@@ -1,0 +1,33 @@
+
+image: docker:latest
+services:
+   - docker:dind
+stages:
+   - build
+   - deploy
+variables:
+  COMMIT: $CI_COMMIT_SHORT_SHA
+  IMAGE_TAG1: asetcoservice/mehraman-uc:$CI_COMMIT_SHORT_SHA
+BUILD:
+  stage: build
+  tags:
+     - uc
+  only:
+      - Production
+  script:
+     - docker build -t asetcoservice/mehraman-uc:latest .
+     - docker push asetcoservice/mehraman-uc:latest
+     - echo "PUSH On DOCKER HUB..."
+DEPLOY:
+ stage: deploy
+ tags:
+   - uc
+
+ only:
+     - Production
+ script:
+    - kubectl cluster-info
+    - kubectl rollout restart deployment/backend-uc
+    - echo "DEPLOY On Kubernetes..."
+    - echo "FINISHED CI/CD LEASSON..."
+
