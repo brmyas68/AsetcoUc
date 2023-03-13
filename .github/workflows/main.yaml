@@ -6,7 +6,7 @@ on:
       - "main"
 
 env:
-  TEST_TAG: asetcoservice/compose-homacall-uc:test
+  TEST_TAG: app/user:test
   LATEST_TAG: asetcoservice/compose-homacall-uc:latest
 
 jobs:
@@ -44,6 +44,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
+          file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ env.LATEST_TAG }}
