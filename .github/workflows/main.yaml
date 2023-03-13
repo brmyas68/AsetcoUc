@@ -38,7 +38,7 @@ jobs:
       -
         name: Test
         run: |
-          docker run --rm ${{ env.TEST_TAG }} sleep 30s
+          docker run --rm ${{ env.TEST_TAG }} /bin/sh -c 'exit 3'
       -
         name: Build and push
         uses: docker/build-push-action@v4
