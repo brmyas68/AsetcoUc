@@ -1,0 +1,143 @@
+
+version: '3.4'
+
+networks:
+  default:
+    name: web_net
+
+volumes:
+  traefik-acme:
+    name: traefik-acme
+
+services:
+  traefik:
+    image: traefik:v2.4.8
+    container_name: treafik
+    command:
+      - "--log.level=INFO"
+      - "--log.filepath=/log-file.log"
+      - "--log.format=json"
+      - "--api=true"
+      - "--ping=true"
+      - "--accesslog=true"
+      - "--accesslog.bufferingsize=100"
+      - "--api.insecure=true"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=web_net"
+      - "--entrypoints.http.address=:80"
+      - "--entrypoints.https.address=:443"
+
+      - "--certificatesresolvers.mycert.acme.email=yaserbarimani@gmail.com"
+      - "--certificatesresolvers.mycert.acme.storage=/acme/acme.json"
+      - "--certificatesresolvers.mycert.acme.tlschallenge=true"
+
+      - "--providers.file.filename=/traefik/config.yml"
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-acme:/acme
+      - ./traefik:/traefik
+    networks:
+      - default
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web_net"
+      - "traefik.http.routers.traefik.entrypoints=http"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.asetcoyadak.com`)"
+      - "traefik.http.routers.traefik.middlewares=https-redirect"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.web-auth.basicauth.users=user:$$apr1$$QpkypDvQ$$FjJgBGyX/By8agkOCUvDo."
+      - "traefik.http.routers.traefik-secure.middlewares=web-auth"
+      - "traefik.http.routers.traefik-secure.entrypoints=https"
+      - "traefik.http.routers.traefik-secure.rule=Host(`traefik.asetcoyadak.com`)"
+      - "traefik.http.routers.traefik-secure.tls=true"
+      - "traefik.http.routers.traefik-secure.tls.options=default"
+      - "traefik.http.routers.traefik-secure.tls.certresolver=mycert"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+
+  front: 
+    image: asetcoservice/compose-homacall-frontend
+    container_name: front
+    restart: always
+    networks:
+      - default
+    labels:
+     - "traefik.enable=true"
+     - "traefik.docker.network=web_net"
+     - "traefik.http.routers.repo.entrypoints=http"
+     - "traefik.http.routers.repo.rule=Host(`www.asetcoyadak.com`)"
+     - "traefik.http.routers.repo.service=repo-secure"
+     - "traefik.http.routers.repo.middlewares=https-redirect"
+     - "traefik.http.routers.repo-secure.entrypoints=https"
+     - "traefik.http.routers.repo-secure.rule=Host(`www.asetcoyadak.com`)"
+     - "traefik.http.routers.repo-secure.tls=true"
+     - "traefik.http.routers.repo-secure.tls.options=default"
+     - "traefik.http.routers.repo-secure.tls.certresolver=mycert"
+     - "traefik.http.routers.repo-secure.service=repo-secure"
+     - "traefik.http.services.repo-secure.loadbalancer.server.port=3000"
+  backend:
+    image: asetcoservice/compose-homacall-backend
+    container_name: backend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    restart: always
+    networks:
+      - default
+    depends_on:
+      - db
+    labels:
+     - "traefik.enable=true"
+     - "traefik.docker.network=web_net"
+     - "traefik.http.routers.backend.entrypoints=http"
+     - "traefik.http.routers.backend.rule=Host(`api.asetcoyadak.com`)"
+     - "traefik.http.routers.backend.service=backend-secure"
+     - "traefik.http.routers.backend.middlewares=https-redirect"
+     - "traefik.http.routers.backend-secure.entrypoints=https"
+     - "traefik.http.routers.backend-secure.rule=Host(`api.asetcoyadak.com`)"
+     - "traefik.http.routers.backend-secure.tls=true"
+     - "traefik.http.routers.backend-secure.tls.options=default"
+     - "traefik.http.routers.backend-secure.tls.certresolver=mycert"
+     - "traefik.http.routers.backend-secure.service=backend-secure"
+     - "traefik.http.services.backend-secure.loadbalancer.server.port=80"
+  backend2:
+    image: asetcoservice/compose-homacall-uc
+    container_name: uc
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    restart: always
+    networks:
+      - default
+    depends_on:
+      - db
+    labels:
+     - "traefik.enable=true"
+     - "traefik.docker.network=web_net"
+     - "traefik.http.routers.backend2.entrypoints=http"
+     - "traefik.http.routers.backend2.rule=Host(`uc.asetcoyadak.com`)"
+     - "traefik.http.routers.backend2.service=backend2-secure"
+     - "traefik.http.routers.backend2.middlewares=https-redirect"
+     - "traefik.http.routers.backend2-secure.entrypoints=https"
+     - "traefik.http.routers.backend2-secure.rule=Host(`uc.asetcoyadak.com`)"
+     - "traefik.http.routers.backend2-secure.tls=true"
+     - "traefik.http.routers.backend2-secure.tls.options=default"
+     - "traefik.http.routers.backend2-secure.tls.certresolver=mycert"
+     - "traefik.http.routers.backend2-secure.service=backend2-secure"
+     - "traefik.http.services.backend2-secure.loadbalancer.server.port=80"
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: db
+    environment:
+      MSSQL_SA_PASSWORD: "Yaser@871132871"
+      ACCEPT_EULA: "Y"
+    ports:
+     - "1433:1433"
+    restart: always
+    networks:
+      - default
+    volumes:
+      - ./sqlserver:/var/opt/mssql
