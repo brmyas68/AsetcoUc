@@ -40,6 +40,7 @@ jobs:
       name: Docker-Compose Remote Deployment
       with:
         ssh_host: 107.181.112.145
+        ssh_port: 2233
         ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
         ssh_user: ${{ secrets.SSH_USER }}
         docker_compose_prefix: asetco
