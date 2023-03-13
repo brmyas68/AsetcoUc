@@ -41,6 +41,7 @@ jobs:
       with:
         ssh_host: 31.40.4.207
         ssh_port: 2233
+        ssh_user: root
         ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
         ssh_user: ${{ secrets.SSH_USER }}
         docker_compose_prefix: asetco
