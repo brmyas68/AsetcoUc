@@ -56,7 +56,7 @@ builder.Services.AddCors(options =>
         builder => builder
            //.SetIsOriginAllowed( _ => true)
            //.AllowAnyOrigin()
-           .WithOrigins("http://localhost:3000", "https://www.asetcoyadak.com", "ftp://107.181.112.145", "http://107.181.112.145", "https://uc.asetcoyadak.com", "https://api.asetcoyadak.com", "https://asetcoyadak.com", "https://god-asetco.netlify.app", "https://asetco.ir")
+           .WithOrigins("http://localhost:3000", "https://www.asetcoyadak.com", "ftp://107.181.112.145", "http://localhost", "https://uc.asetcoyadak.com", "https://api.asetcoyadak.com", "https://asetcoyadak.com", "https://god-asetco.netlify.app", "https://asetco.ir", "https://www.asetcoyadak.com", "ftp:/135.181.125.87", "https://api.asetcoyadak.com", "https://www.asetcoyadak.com/api")
           .AllowAnyMethod()
           .AllowAnyHeader()
           .AllowCredentials()
